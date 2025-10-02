@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QISCET AI Admissions Bot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+        }
+        .chat-container {
+            max-width: 768px;
+            height: 90vh;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            border-radius: 1.5rem; /* Rounded corners */
+            overflow: hidden;
+        }
+        .header {
+            background-color: #0b693e; /* QISCET Green/Dark accent */
+            color: white;
+            padding: 1.5rem;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .chat-area {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            background-color: #ffffff;
+        }
+        .message {
+            margin-bottom: 1rem;
+            display: flex;
+        }
+        .bot-message {
+            justify-content: flex-start;
+        }
+        .user-message {
+            justify-content: flex-end;
+        }
+        .bot-bubble {
+            background-color: #e2f0e8; /* Light green bubble */
+            color: #1f2937;
+            padding: 0.75rem 1rem;
+            max-width: 80%;
+            border-radius: 1rem 1rem 1rem 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        .user-bubble {
+            background-color: #0b693e; /* Dark green bubble */
+            color: white;
+            padding: 0.75rem 1rem;
+            max-width: 80%;
+            border-radius: 1rem 1rem 0 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .input-area {
+            padding: 1rem;
+            border-top: 1px solid #e2e8f0;
+            background-color: #f7fafc;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .send-button {
+            background-color: #0b693e;
+            transition: background-color 0.2s;
+        }
+        .send-button:hover {
+            background-color: #084c2c;
+        }
+        .loading-indicator {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            color: #6b7280;
+            font-style: italic;
+            padding: 0.5rem;
+        }
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #0b693e;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+        .citation {
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            color: #6b7280;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 0.5rem;
+        }
+        .citation a {
+            color: #10b981;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        .citation a:hover {
+            text-decoration: underline;
+        }
+        /* New styles for the status panel */
+        .status-panel {
+            padding: 0.75rem 1rem;
+            background-color: #fffbe0; /* Light yellow background for attention */
+            border-bottom: 2px solid #fcd34d;
+            font-size: 0.875rem;
+            color: #78350f;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            margin-right: 1rem;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.3rem;
+        }
+        .dot-green { background-color: #10b981; }
+        .dot-red { background-color: #ef4444; }
+        .dot-yellow { background-color: #f59e0b; }
+
+        @media (max-width: 640px) {
+            .chat-container {
+                height: 100vh;
+                margin: 0;
+                border-radius: 0;
+            }
+            .header {
+                padding: 1rem;
+                border-radius: 0;
+            }
+            .status-panel div {
+                flex-wrap: wrap;
+            }
+            .status-item {
+                margin-bottom: 0.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <!-- Header -->
+        <div class="header">
+            <i class="fas fa-graduation-cap text-3xl"></i>
+            <div>
+                <h1 class="text-xl font-bold">QISCET Admissions Bot</h1>
+                <p class="text-sm opacity-80">Your AI guide to QIS College of Engineering and Technology</p>
+            </div>
+        </div>
+
+        <!-- Campus Status Panel (Simulated IoT) -->
+        <div id="status-panel" class="status-panel">
+            <div class="font-semibold mb-1 flex items-center">
+                <i class="fas fa-microchip mr-2"></i> Real-time Campus Status:
+            </div>
+            <div id="status-items" class="flex flex-wrap text-xs md:text-sm">
+                <!-- Status items injected here -->
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div id="chat-area" class="chat-area">
+            <!-- Initial Bot Message -->
+            <div class="message bot-message">
+                <div class="bot-bubble">
+                    Hello! I am **QIS Bot**. I can now answer questions about **college bus routes and pickup times** using the latest transport schedule, in addition to admissions, fees, and real-time campus status! How can I help?
+                </div>
+            </div>
+            <!-- Messages will be injected here -->
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Ask about B.Tech, the AI lab, or the pickup time for Bus 13..."
+                   class="flex-grow p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-150"
+                   onkeydown="if(event.key === 'Enter') sendMessage()">
+            <button id="send-button" onclick="sendMessage()"
+                    class="send-button text-white p-3 rounded-xl shadow-lg flex items-center justify-center disabled:opacity-50"
+                    disabled>
+                <i class="fas fa-paper-plane text-lg"></i>
+            </button>
+        </div>
+        
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="loading-indicator hidden px-4 py-2">
+            <span class="loading-dot"></span>
+            <span class="loading-dot"></span>
+            <span class="loading-dot"></span>
+            <span class="text-sm">QIS Bot is typing...</span>
+        </div>
+
+    </div>
+
+    <script type="module">
+        // Global Constants
+        const API_KEY = ""; // Leave as-is for Canvas environment
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+        const MAX_RETRIES = 5;
+
+        // UI Elements
+        const chatArea = document.getElementById('chat-area');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const statusItemsContainer = document.getElementById('status-items');
+
+        // Chat State
+        let chatHistory = [];
+        let isSending = false;
+        
+        // --- Static System Instruction Base ---
+        const staticSystemPrompt = `You are the official AI Admissions Counselor for QIS College of Engineering and Technology (QISCET), Ongole, Andhra Pradesh, established in 1998 and affiliated with JNTU Kakinada (JNTUK). Your name is QIS Bot.
+Your role is to provide accurate, helpful, and encouraging information about QISCET to prospective students.
+Key facts to rely on:
+1.  **Location:** Vengamukkapalem, Ongole, Prakasam Dist, Andhra Pradesh - 523272.
+2.  **UG Courses (B.Tech):** Computer Science (various specializations like AI & ML, Data Science, IOT), ECE, EEE, Mechanical, Civil, and IT.
+3.  **PG Courses:** M.Tech, MBA, MCA.
+4.  **Admission Process:** B.Tech is primarily through AP EAMCET; PG courses via GATE/AP PGECET/AP ICET.
+5.  **Affiliation:** AICTE, NBA, UGC approved; affiliated to JNTUK.
+6.  **Placements:** Top recruiters include TCS, Wipro, HCL, Hexaware, and Deloitte.
+
+IMPORTANT: You will be provided with real-time campus status data and transportation data. Use this data to answer any questions related to lab occupancy, server health, Wi-Fi status, bus routes, pick-up points, and timings. When answering a transport question, use the TRANSPORTATION DATA provided below. If a question is about the real-time status, your answer MUST be grounded in the provided status data. If the status or transport data is not relevant, ignore it.`;
+
+        // --- Extracted Transport Data (from Bus Routes & Timings 2025-2026 PDF) ---
+        const TRANSPORT_DATA = [
+            { "Route": "1", "Bus No": "21, 24", "Stops": "SANKARAPURAM (7:10 AM), ADDANKI (BHAVANI CENTER - 7:25 AM), ADDANKI (RTC BUSTAND - 7:30 AM), ADDANKI (RAMNAGAR - 7:35 AM)", "Driver": "B.V RAMBABU (9247285823), NARASAIAH (9948580799)" },
+            { "Route": "2", "Bus No": "56", "Stops": "RAVINUTHALA (7:20 AM), PAMIDIPADU (7:30 AM), PRASANGALAPADU (7:40 AM), POTHAVARAM (7:45 AM), NIDAMANURU.B (7:55 AM), HANUMAPURAM (8:00 AM), GROTHCENTER (8:05 AM)", "Driver": "G CHIRANJEEVI (9959249978)" },
+            { "Route": "3", "Bus No": "48", "Stops": "VALAPARLA (7:10 AM), KONANKI (7:15 AM), BOLLAPALLI TOLL GATE (7:20 AM), KONDAMANJULURU (7:25 AM), MUPPAVARAM (7:35 AM), JAGARLAMUDIVARIPALEM (7:40 AM), RENANGIVARAM (7:50 AM), MEDARAMETLA (8:00 AM), TIMMANNAPALEM (8:10 AM)", "Driver": "G AJAYKUMAR (8499946454)" },
+            { "Route": "4", "Bus No": "46", "Stops": "PANGULURU (7:10 AM), CHANDALURU (7:15 AM), KKOPPERAPADU (7:20 AM), TAKKELLAPADU (7:25 AM), ALLAVALAPADU (7:35 AM), VENKATAPURAM (7:40 AM), GUDIPADU P KORISAPADU (7:50 AM), GUNDLAPALLI (8:00 AM)", "Driver": "B VENKAT REDDY (8977779746)" },
+            { "Route": "5", "Bus No": "04, 17", "Stops": "MADANURU (7:30 AM), EETHAMUKKALA (7:35 AM), KOTTARATNAM-Palleypalem (7:45 AM), ALLURU (7:55 AM), KOPPOLU (8:00 AM)", "Driver": "R KRUPARAO (966396699), T TIRUPALU (9963396067)" },
+            { "Route": "6", "Bus No": "26", "Stops": "KANDUKURU (7:00 AM), OGURU (7:15 AM), KANUMALLA (7:20 AM), PONNALURU (7:20 AM), DUPAGUNTA (7:25 AM)", "Driver": "MV RAMIREDDY (9440566984)" },
+            { "Route": "7", "Bus No": "50", "Stops": "MACHAVARAM (7:20 AM), MOPADU (7:25 AM), KANDUKURU (7:35 AM), OGURU (7:40 AM), KANUMALLA (7:45 AM)", "Driver": "T NARAYANA (9963668799)" },
+            { "Route": "8", "Bus No": "41", "Stops": "KANDUKURU (7:00 AM), MAHADEVAPURAM (7:10 AM), PALUKURU (7:25 AM)", "Driver": "K RAMANA REDDY (9000023032)" },
+            { "Route": "9", "Bus No": "51", "Stops": "TETTU (7:20 AM), MOCHARLA (7:35 AM), VEEREYPALII (7:40 AM), CHAGOLLU-MANNEYTIKOTA (7:45 AM), RAJUPALEM (7:55 AM), ULAVAPADU (8:00 AM), SINGARAYAKONDA (8:10 AM)", "Driver": "G.PRASAD (8179661069)" },
+            { "Route": "10", "Bus No": "14", "Stops": "PAKALA (7:40 AM), SINGARAYAKONDA (7:50 AM), TANGUTURU (8:00 AM)", "Driver": "CH RAMAKRISHNA (8106376718)" },
+            { "Route": "11", "Bus No": "25", "Stops": "KALIKIVAI (7:10 AM), SINGARAYAKONDA (7:15 AM), TANGUTURU (7:20 AM), SURAREDDYPALEM (7:25 AM), PELLURU (7:30 AM), VALLURU (7:40 AM)", "Driver": "M SUBBARAMIREDDY (9603555905)" },
+            { "Route": "12", "Bus No": "39", "Stops": "KATTAVRIPALEM (7:30 AM), KONDEPI (7:35 AM), PERIDEPI (7:40 AM), MUPPAVARAM (7:43 AM), CHODAVARAM (7:46 AM), VENNURU (7:50 AM), KUPPALPADU (7:56 AM), THUMADU (7:58 AM), SADUVARIPALEM (8:00 AM), JAMMULAPALEM (8:08 AM), T NAYUDUPALEM (8:25 AM), VALLURU (8:30 AM), PELLURU (8:35 AM)", "Driver": "P NARASIMHARAO (9030567155)" },
+            { "Route": "13", "Bus No": "44, 54", "Stops": "PODILI (7:00 AM), LAKSHMIPURAM JUNCTION (7:10 AM), TALAMALLA (7:20 AM), MARRICHETLAPALEM (7:30 AM), RAJUPALEM (7:35 AM)", "Driver": "SK SUBHANI (9885630856), D HARI (8340035303)" },
+            { "Route": "14", "Bus No": "45", "Stops": "GADIPATTIVARIPALEM (7:25 AM), PALLAMALLI (7:30 AM), BANDLAMUDI (7:35 AM), CHIMAKURTHY (7:50 AM), PERNAMITTA (8:10 AM)", "Driver": "PANAKAMMARAO (9951407424)" },
+            { "Route": "15", "Bus No": "32", "Stops": "CHIMAKURTHI (7:25 AM), PERNAMITTA (8:10 AM)", "Driver": "V CHIRANJEEVI (9640929233)" },
+            { "Route": "16", "Bus No": "53", "Stops": "VEMULAPADU-(Maddululu) (7:20 AM), CHILAKAPADU (7:25 AM), MACHAVARAM (Madduluru) (7:30 AM), CHILAKAPADU (7:35 AM), GUMMALAMPADU (7:45 AM), GANGAVARAM (7:55 AM), CHANDRAPALEM (8:00 AM), SANTHANUTHALAPADU (8:10 AM), KURNOOLROAD ONGOLE (8:20 AM)", "Driver": "K KRISHNANAIH (9494899776)" },
+            { "Route": "17", "Bus No": "47", "Stops": "CHALAPALEM, RUDRAVARAM (7:35 AM), MYNAMPADU (7:45 AM), YENDLURU (7:55 AM), REDDY PALEM (8:05 AM), PERNAMITTA (8:20 AM), KURNOOL ROAD ONGOLE (8:30 AM)", "Driver": "CH SRINIVASULU (9908875693)" },
+            { "Route": "18", "Bus No": "23", "Stops": "INKOLLU (7:20 AM), KONIKI (7:30 AM), DUDDUKURU (7:40 AM), RACHAPUDI (7:50 AM)", "Driver": "B RAJARAO (9959301513)" },
+            { "Route": "19", "Bus No": "42", "Stops": "CHIRALA (7:10 AM), VETAPALEM (7:20 AM), PANDILLAPALLI (7:25 AM), KADVAKUDURU (7:30 AM), CHINAGANJAM (7:35 AM)", "Driver": "K KISHORE (7036619947)" },
+            { "Route": "20", "Bus No": "38", "Stops": "UPPUGUNDURU (7:20 AM), NAGULUIPPALAPADU (7:40 AM), INAMANAMELURU (8:00 AM), MADDIRALAPADU (8:15 AM)", "Driver": "K GOPI (9704771488)" },
+            { "Route": "21", "Bus No": "29", "Stops": "CHAVATAPALEM (7:20 AM), AMMANABROLU (7:30 AM), AGRAHARAM (NG PADU) (7:45 AM), CHADALAVADA (7:50 AM)", "Driver": "RAGHAVENDRA RAO (9000322668)" },
+            { "Route": "22", "Bus No": "52", "Stops": "GANGAVARAM (7:00 AM), TALLURU (7:20 AM), DHENUVUKONDA (7:30 AM), SIVARAMAPURAM/Gadiparthivaripalem (7:40 AM), ILAPAVULURU (7:45 AM), DENUVAKONDA (7:50 AM), DODDAVARAM (8:00 AM), TELLAPADU (8:05 AM), MALLAVARAM (8:10 AM), KOCLANAKOTA (8:15 AM), VELLAMPALLI (8:00 AM)", "Driver": "SHAIK BASHA (7997931640)" },
+            { "Route": "23", "Bus No": "49", "Stops": "KAMEPALLI (7:00 AM), NARSINGOLU (7:30 AM), JARUGUMALLI (8:10 AM), SINGARAYAKONDA (8:15 AM)", "Driver": "P SAITEJA (6305555404)" },
+            { "Route": "24", "Bus No": "40", "Stops": "GUNDAYAPALEM (7:00 AM), ULICHI (7:10 AM), PANAKALAPALEM (7:20 AM), KARAVADI (7:30 AM), VALETIVARIPALEM (7:45 AM), THROVAGUNTA (7:50 AM), MUKTHINUTHALAPADU (8:00 AM)", "Driver": "S SOMA RAJU (8977227299)" },
+            { "Route": "25", "Bus No": "19", "Stops": "NELTURU (7:30 AM), GURAVAREDDYPALEM (7:40 AM), PEDDA KOTTAPALLI (7:50 AM), LINGAMGUNTA (8:00 AM), NAVBHARATH THEATER, ONGOLE (8:10 AM)", "Driver": "D RAMBABU (9640248100)" },
+            { "Route": "26", "Bus No": "31", "Stops": "MARLAPADU (7:30 AM), KANDULURU (7:40 AM), YARAJALA (8:00 AM), VENGAMUKKAPALEM (8:15 AM)", "Driver": "G SUBRMANYAM (8985562952)" },
+            { "Route": "27", "Bus No": "05", "Stops": "SUJATHANAGAR, ONGOLE (8:10 AM), SAMATHANAGAR, ONGOLE (8:20 AM)", "Driver": "K RAMIREDDY (9703338160)" },
+            { "Route": "28", "Bus No": "06", "Stops": "PVR HIGHSCHOOL ONGOLE (8:10 AM), ANJAIAH ROAD, ONGOLE (8:13 AM)", "Driver": "M SRINU (9949432577)" },
+            { "Route": "29", "Bus No": "02", "Stops": "SAIBABA TEMPLE MM ROAD ONGOLE (8:15 AM), GAYATRI MANDIRAM ONGOLE (8:17 AM), MANGAMURU ROAD, ONGOLE (8:20 AM)", "Driver": "SK MEERAVALI (8008117007)" },
+            { "Route": "30", "Bus No": "08", "Stops": "MUNGAMURU (7:40 AM), KOLLAHANUMANTHRAO ARCH ONGOLE (8:00 AM), GANDHINAGAR, ONGOLE (8:10 AM)", "Driver": "N SUBBAIAH (6305606167)" },
+            { "Route": "31", "Bus No": "20", "Stops": "KOTTARATNAM BUSTAND ONGOLE (8:00 AM), RAILWAY SATATION ONGOLE (8:10 AM), SBI MAIN BRANCH ONGOLE (8:12 AM), COLLECTOR OFFIECE ONGOLE (8:18 AM), NELLURU BUSTAND ONGOLE (8:20 AM), RAMNAGAR ONGOLE (8:25 AM)", "Driver": "CH SRINIVASA REDDY (9908876448)" },
+            { "Route": "32", "Bus No": "28", "Stops": "BHAGYANAGAR ONGOLE (8:30 AM), RIMS HOSPITAL ONGOLE (8:35 AM), HOUSINGBOARD ONGOLE (8:38 AM)", "Driver": "A DHARMENDRA (9618146216)" },
+            { "Route": "33", "Bus No": "35", "Stops": "THROVAGUNTA (7:50 AM), MUKTHINUTHALAPADU (7:55 AM), BALARAMCOLONEY ONGOLE (8:00 AM), GORANTLAMULTIPLEX ONGOLE (8:05 AM)", "Driver": "U ANILKUMAR (9110554521)" },
+            { "Route": "34", "Bus No": "07", "Stops": "GOPALNAGAR ONGOLE (8:15 AM)", "Driver": "J SREERAMULU (9505822309)" },
+            { "Route": "35", "Bus No": "03", "Stops": "KAMMARALEM ONGOLE (8:20 AM), TRUNK ROAD ONGOLE (8:25 AM), KOTHAPATNAM BUSTAND ONGOLE (8:30 AM)", "Driver": "CH CHANDRA SEKHAR (9642440277)" },
+            { "Route": "36", "Bus No": "01", "Stops": "GADDALAGUNTA PARTY OFFIECE ONGOLE (8:00 AM), COURTCENTRE ONGOLE (8:10 AM), MUNCIPAL OFFIECE ONGOLE (8:15 AM), JAYARAM THEATER ONGOLE (8:17 AM), HILLTOWER ONGOLE (8:20 AM), HOUSINGBOARD COLONEY ONGOLE (8:25 AM)", "Driver": "U SRINU (7995864889)" }
+        ];
+
+        // --- Simulated IoT Data Source ---
+        const getCampusStatus = () => {
+            // Simulate dynamic status based on the current hour (e.g., peak hours 9 AM - 5 PM)
+            const hour = new Date().getHours();
+            const isPeakTime = hour >= 9 && hour < 17;
+            const isNight = hour < 7 || hour >= 22;
+
+            const status = {
+                'AI_Lab_301_Occupancy': isPeakTime ? 'High (85% occupied)' : isNight ? 'Closed' : 'Low (15% occupied)',
+                'Campus_Wi_Fi_Status': isPeakTime ? 'Operational (Moderate Speed)' : 'Operational (High Speed)',
+                'Main_Server_Health': isPeakTime ? 'Degraded (High Load)' : 'Optimal',
+                'Library_Quiet_Zone': isPeakTime ? 'Moderately Busy' : 'Very Quiet',
+                'Power_Supply': isNight ? 'Backup Generator' : 'Main Grid'
+            };
+
+            let statusText = "\n\nCURRENT QISCET REAL-TIME CAMPUS STATUS:\n";
+            for (const [key, value] of Object.entries(status)) {
+                statusText += `- ${key.replace(/_/g, ' ')}: ${value}\n`;
+            }
+            return { statusData: status, statusText: statusText };
+        };
+
+        // Function to update the UI with simulated status
+        const updateStatusDisplay = () => {
+            const { statusData } = getCampusStatus();
+            statusItemsContainer.innerHTML = '';
+
+            for (const [key, value] of Object.entries(statusData)) {
+                const item = document.createElement('div');
+                item.className = 'status-item';
+                
+                let dotClass = 'dot-green';
+                if (value.includes('Degraded') || value.includes('High') || value.includes('Busy')) {
+                    dotClass = 'dot-yellow';
+                } else if (value.includes('Closed') || value.includes('Generator')) {
+                    dotClass = 'dot-red';
+                }
+
+                item.innerHTML = `
+                    <span class="status-dot ${dotClass}"></span>
+                    <span class="font-medium">${key.replace(/_/g, ' ')}:</span> ${value}
+                `;
+                statusItemsContainer.appendChild(item);
+            }
+        };
+
+        // Utility to enable/disable UI
+        const setSendingState = (sending) => {
+            isSending = sending;
+            userInput.disabled = sending;
+            sendButton.disabled = sending || userInput.value.trim() === '';
+            loadingIndicator.classList.toggle('hidden', !sending);
+        };
+
+        // Initialize button state and status display
+        userInput.addEventListener('input', () => {
+            sendButton.disabled = isSending || userInput.value.trim() === '';
+        });
+        
+        // Initial and periodic status update (simulating real-time feed)
+        updateStatusDisplay();
+        setInterval(updateStatusDisplay, 30000); // Update every 30 seconds
+
+        // Function to display a message
+        const displayMessage = (text, role, sources = []) => {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}-message`;
+            
+            // Use marked.parse for Markdown rendering
+            let parsedText = typeof marked !== 'undefined' ? marked.parse(text) : text;
+            
+            let contentHTML = `<div class="${role}-bubble">`;
+            contentHTML += parsedText;
+            
+            if (sources.length > 0) {
+                contentHTML += `<div class="citation mt-3">**Sources:**<ul class="list-disc list-inside mt-1 space-y-1">`;
+                sources.forEach(source => {
+                    if (source.uri && source.title) {
+                        contentHTML += `<li><a href="${source.uri}" target="_blank" rel="noopener noreferrer" title="${source.title}">${source.title.substring(0, 50)}...</a></li>`;
+                    }
+                });
+                contentHTML += `</ul></div>`;
+            }
+            contentHTML += `</div>`;
+            messageDiv.innerHTML = contentHTML;
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight; // Scroll to bottom
+        };
+
+        // --- Core API Call Function with Exponential Backoff ---
+        const fetchChatResponse = async (history) => {
+            const { statusText } = getCampusStatus();
+            
+            // Format transport data for the LLM
+            const transportText = "\n\nQISCET TRANSPORTATION DATA (AY 2025-2026, w.e.f 04-08-2025):\n" + 
+                                  "NOTE: All buses reach college by 8:45 AM. Students must be available 10 minutes before the scheduled time.\n" +
+                                  JSON.stringify(TRANSPORT_DATA, null, 2) + "\n";
+                                  
+            // Combine all instructions
+            const dynamicSystemInstruction = staticSystemPrompt + statusText + transportText; // Append real-time status AND transport data
+
+            const payload = {
+                contents: history,
+                tools: [{ "google_search": {} }], // Enable search grounding
+                systemInstruction: {
+                    parts: [{ text: dynamicSystemInstruction }]
+                },
+            };
+
+            for (let i = 0; i < MAX_RETRIES; i++) {
+                const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                if (i > 0) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errorBody = await response.json();
+                        if (response.status === 429 && i < MAX_RETRIES - 1) {
+                            console.warn(`Rate limit hit (429). Retrying in ${Math.round(delay / 1000)}s...`);
+                            continue; // Retry on 429
+                        }
+                        throw new Error(`API request failed with status ${response.status}: ${errorBody.error?.message || 'Unknown error'}`);
+                    }
+
+                    const result = await response.json();
+                    const candidate = result.candidates?.[0];
+
+                    if (candidate && candidate.content?.parts?.[0]?.text) {
+                        const text = candidate.content.parts[0].text;
+                        let sources = [];
+                        const groundingMetadata = candidate.groundingMetadata;
+                        
+                        if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                            sources = groundingMetadata.groundingAttributions
+                                .map(attribution => ({
+                                    uri: attribution.web?.uri,
+                                    title: attribution.web?.title,
+                                }))
+                                .filter(source => source.uri && source.title); // Ensure sources are valid
+                        }
+                        
+                        return { text, sources };
+                    } else {
+                        throw new Error("API returned an invalid or empty response structure.");
+                    }
+
+                } catch (error) {
+                    console.error("Fetch failed:", error);
+                    if (i === MAX_RETRIES - 1) {
+                        throw new Error(`Failed to get response after ${MAX_RETRIES} attempts.`);
+                    }
+                }
+            }
+        };
+
+        // Main send message handler
+        window.sendMessage = async () => {
+            if (isSending) return;
+
+            const userText = userInput.value.trim();
+            if (userText === '') return;
+
+            // 1. Display user message and clear input
+            displayMessage(userText, 'user');
+            userInput.value = '';
+            setSendingState(true);
+
+            // 2. Update chat history for context
+            chatHistory.push({ role: "user", parts: [{ text: userText }] });
+
+            try {
+                // 3. Call the API
+                const { text, sources } = await fetchChatResponse(chatHistory);
+
+                // 4. Display bot response
+                displayMessage(text, 'bot', sources);
+
+                // 5. Update history with bot response for next turn
+                chatHistory.push({ role: "model", parts: [{ text: text }] });
+
+            } catch (error) {
+                console.error("Chat Error:", error);
+                displayMessage(`I'm sorry, QIS Bot is having trouble connecting right now. Please try again later. (Error: ${error.message.substring(0, 50)}...)`, 'bot');
+            } finally {
+                setSendingState(false);
+            }
+        };
+
+        // --- Markdown Rendering Setup (marked.js) ---
+        // Load marked.js for Markdown parsing in the chat bubbles
+        const loadScript = (url, callback) => {
+            const script = document.createElement('script');
+            script.src = url;
+            script.onload = callback;
+            document.head.appendChild(script);
+        };
+
+        loadScript('https://cdn.jsdelivr.net/npm/marked/marked.min.js', () => {
+            console.log('Markdown parser (marked.js) loaded.');
+            // Enable button after script load and initial greeting
+            sendButton.disabled = userInput.value.trim() === '';
+        });
+    </script>
+
+</body>
+</html>
